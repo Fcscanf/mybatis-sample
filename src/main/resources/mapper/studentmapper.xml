@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.fcsca.dao.IStudentDao">
+
+    <!--1.二级缓存EhcacheCache的引入-->
+    <!--2.在resourses文件夹下面引入ehcache.xml文件
+          该文件是在ehcache-core-2.6.8.jar包下面的xml文件更名而来-->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache">
+        <!--在ehcache.xml里进行全局设置-->
+        <!--进行局部个性化设置-->
+        <property name="timeToIdleSeconds" value="60"/>
+    </cache>
+
+    <!--插入数据-->
+    <!--flushCache="false"设定在二级缓存情况下使增删改不刷新二级缓存-->
+    <insert id="insertStudent" flushCache="false">
+        insert into student(name,age,score) values (#{name},#{age},#{score})
+    </insert>
+
+    <!--获取当前插入数据的id-->
+    <insert id="insertStudentCacheId">
+        insert into student(name,age,score) values (#{name},#{age},#{score})
+        <selectKey resultType="int" keyProperty="id" order="AFTER">
+            select @@identity
+        </selectKey>
+    </insert>
+
+    <!--删除id为？的用户-->
+    <delete id="deleteStudentById">
+        delete from student where id=#{xxx} <!--#{}只是一个占位符,里面填什么都行-->
+    </delete>
+
+    <!--修改信息-->
+    <update id="updataStudent">
+        update student set name=#{name},age=#{age},score=#{score} where id=#{id}
+    </update>
+
+    <!--useCache="false"对当前sql的二级缓存的局部关闭-->
+    <!--查询所有的student信息-->
+    <select id="selectAllStudent" useCache="false" resultType="Student">
+        select id,name,age,score from student
+    </select>
+
+    <!--根据id查询-->
+    <select id="selectStudentById" resultType="Student">
+        select id,name,age,score from student where id=#{id}
+    </select>
+
+    <!--根据名字进行模糊查询-->
+    <select id="selectStudentsByCondition" resultType="Student">
+        <!--select id,name,age,score from student where name like concat('%',#{xxx},'%')-->
+        <!--select id,name,age,score from student where name like '%' #{xxx} '%'-->
+        <!--select id,name,age,score from student where name like '%${value}%'-->
+        <!--多条件查询通过Map传值-->
+        <!--select id,name,age,score
+        from student
+        where name
+        like '%' #{name} '%'
+        and age > #{age}
+        and score > #{student1.score}-->
+        <!--多条件查询通过索引传值-->
+        select id,name,age,score
+        from student
+        where name
+        like '%' #{0} '%'
+        and age > #{1}
+        <!--
+        #{}中可以放的内容：
+        1.参数对象的属性
+        2.随意内容，#{}只是一个占位符
+        3.参数为map时的KEY
+        4.参数为map时，若KEY所对应的value为对象，则可将该对象的属性放入
+        5.参数的索引号
+        -->
+    </select>
+
+    <!--动态SQL查询-->
+    <select id="selectStudentsByIf" resultType="Student">
+        select id,name,age,score
+        from student
+        where 1 = 1
+        <if test="name !=null and name != ''">
+            and name like '%' #{name} '%'
+        </if>
+        <if test="age > 0">
+            and age > #{age}
+        </if>
+    </select>
+
+    <select id="selectStudentsByWhere" resultType="Student">
+        select id,name,age,score
+        from student
+        <where>
+            <if test="name !=null and name != ''">
+                and name like '%' #{name} '%'
+            </if>
+            <if test="age > 0">
+                and age > #{age}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectStudentsByChoose" resultType="Student">
+        select id,name,age,score
+        from student
+        <where>
+            <choose>
+                <when test="name != null and name !=''">
+                    and name like '%' #{name} '%'
+                </when>
+                <when test="age > 0">
+                    and age > #{age}
+                </when>
+                <otherwise>
+                    and 1 = 2
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="selectStudentsByForeachArray" resultType="Student">
+        select id,name,age,score
+        from student
+        <if test="array.length > 0">
+            where id in
+            <foreach collection="array" item="myid" open="(" close=")" separator=",">
+                #{myid}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectStudentsByForeachList" resultType="Student">
+        select id,name,age,score
+        from student
+        <if test="list.size > 0">
+            where id in
+            <foreach collection="list" item="myid" open="(" close=")" separator=",">
+                #{myid}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectStudentsByForeachStudent" resultType="Student">
+        select id,name,age,score
+        from student
+        <if test="list.size > 0">
+            where id in
+            <foreach collection="list" item="student" open="(" close=")" separator=",">
+                #{student.id}
+            </foreach>
+        </if>
+    </select>
+
+    <!--使用sql标签-->
+    <select id="selectStudentsByForeachStudentSql" resultType="Student">
+        select <include refid="selectColumns"/>
+        from student
+        <if test="list.size > 0">
+            where id in
+            <foreach collection="list" item="student" open="(" close=")" separator=",">
+                #{student.id}
+            </foreach>
+        </if>
+    </select>
+
+    <sql id="selectColumns">
+        id,name,age,score
+    </sql>
+
+</mapper>

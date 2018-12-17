@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.fcsca.dao.IMinisterDao">
+
+    <!--多表连接查询-->
+    <resultMap id="ministerMapper" type="Minister">
+        <id column="mid" property="mid"/>
+        <result column="mname" property="mname"/>
+        <association property="country" javaType="Country">
+            <id column="cid" property="cid"/>
+            <result column="cname" property="cname"/>
+        </association>
+    </resultMap>
+
+    <select id="selectMinisterById" resultMap="ministerMapper">
+        select mid,mname,cid,cname
+        from minister,country
+        where countryId=cid
+        and mid=#{mid}
+    </select>
+
+    <!--单表连接查询-用的多-可以延迟加载-->
+    <select id="selectCountryByMinister" resultType="Country">
+        select cid,cname
+        from country
+        where cid=#{cid}
+    </select>
+
+    <resultMap id="minister" type="Minister">
+        <id column="mid" property="mid"/>
+        <result column="mname" property="mname"/>
+        <association property="country"
+                     javaType="Country"
+                     select="selectCountryByMinister"
+                     column="countryId"/>
+    </resultMap>
+
+    <select id="selectMinisterByMid" resultMap="minister">
+        select mid,mname,countryId
+        from minister
+        where mid=#{mid}
+    </select>
+
+</mapper>

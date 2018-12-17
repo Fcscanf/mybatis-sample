@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="jdbc.properties"/>
+
+    <!--设置整个应用的常量-->
+    <!--全局设置-->
+    <!--局部设置则应在相应的xml映射文件中设置-->
+
+    <!--二级缓存的局部设置说明：
+        开启内置二级缓存：
+        1.对实体进行序列化-即实体类继承implements Serializable
+        2.在映射文件添加<cache/>标签
+        二级缓存的局部关闭
+        1.在select标签添加useCache="false"进行局部关闭-->
+    <settings>
+        <!--定义二级缓存-->
+
+        <!--关闭二级缓存-->
+        <setting name="cacheEnabled" value="false"/>
+
+        <!--定义一级缓存-->
+
+        <!--延迟加载的总开关-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!--侵入式延迟加载开关-->
+        <setting name="aggressiveLazyLoading" value="flase"/>
+    </settings>
+
+    <typeAliases>
+        <!--<typeAlias type="cn.fcsca.beans" alias="Student"/>-->
+        <package name="cn.fcsca.beans"/>
+    </typeAliases>
+    <!--配置环境-->
+    <environments default="onlineEM">
+        <environment id="onlineEM">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.user}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--注册映射文件-->
+    <mappers>
+        <mapper resource="mapper/studentmapper.xml"/>
+        <!--使用注解时取消上面xml文件的映射，改至package-->
+        <!--<package name="cn.fcsca.dao"/>-->
+    </mappers>
+
+</configuration>

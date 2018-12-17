@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.fcsca.dao.INewsLabelDao">
+
+    <!--根据子节点查询父节点-->
+    <resultMap id="newslabelMapper" type="NewsLabel">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="children"
+                    ofType="Newslabel"
+                    select="selectChildrenByParent"
+                    column="id">
+        </collection>
+    </resultMap>
+
+    <select id="selectChildrenByParent" resultMap="newslabelMapper">
+        select id,name
+        from newslabel
+        where pid=#{pid}
+    </select>
+
+    <!--
+    resultMap中用到的select,可递归调用
+    <select id="selectChildrenByParent" resultMap="newslabelMapper">
+        select id,name
+        from newslabel
+        where pid=#{pid}
+    </select>
+    -->
+
+    <!--根据ID查询其对应的子节点-->
+    <select id="selectChildrenByParents" resultMap="newslabelMapperId">
+        select id,name
+        from newslabel
+        where pid=#{pid}
+    </select>
+
+    <!--two二中递归调用的select-->
+    <!--<select id="" resultMap="">-->
+        <!--select id,name,pid-->
+        <!--from newslabel-->
+        <!--where id=#{id}-->
+    <!--</select>-->
+
+    <resultMap id="newslabelMapperId" type="NewsLabel">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <!--<collection property="children"-->
+                    <!--ofType="Newslabel"-->
+                    <!--select="selectChildrenByParents"-->
+                    <!--column="id">-->
+        <!--</collection>-->
+        <association property="parent"
+                     javaType="Newslabel"
+                     select="selectNewsLabelById"
+                     column="pid"/>
+    </resultMap>
+
+    <!--一中通过id查询的select-->
+    <!--<select id="selectNewsLabelById" resultMap="newslabelMapperId">-->
+        <!--select id,name-->
+        <!--from newslabel-->
+        <!--where id=#{id}-->
+    <!--</select>-->
+
+    <select id="selectNewsLabelById" resultMap="newslabelMapperId">
+        select id,name,pid
+        from newslabel
+        where id=#{id}
+    </select>
+
+</mapper>
